@@ -1,0 +1,248 @@
+openapi: 3.1.0
+info:
+  title: API de Transporte Ferroviario
+  version: 1.0.0
+  description: |
+    API REST para consultar horarios de trenes, precios de tickets y realizar compras.
+    Requiere autenticación mediante **API Key** incluida en el encabezado `X-API-Key`.
+
+servers:
+  - url: https://api.trenes.com/v1
+    description: Servidor principal de producción
+  - url: https://sandbox.api.trenes.com/v1
+    description: Servidor de pruebas (sandbox)
+
+security:
+  - ApiKeyAuth: []
+
+tags:
+  - name: Horarios
+    description: Endpoints relacionados con los horarios de trenes
+  - name: Tickets
+    description: Endpoints relacionados con precios y compras de tickets
+
+paths:
+  /horarios:
+    get:
+      tags:
+        - Horarios
+      summary: Consultar horarios de tren
+      description: Devuelve los horarios disponibles entre una estación de origen y destino en una fecha determinada.
+      operationId: getHorarios
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - name: origen
+          in: query
+          required: true
+          description: Estación de salida
+          schema:
+            type: string
+            example: Retiro
+        - name: destino
+          in: query
+          required: true
+          description: Estación de llegada
+          schema:
+            type: string
+            example: Tigre
+        - name: fecha
+          in: query
+          required: true
+          description: Fecha del viaje (YYYY-MM-DD)
+          schema:
+            type: string
+            format: date
+            example: 2025-11-08
+      responses:
+        '200':
+          description: Lista de horarios disponibles
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  origen:
+                    type: string
+                  destino:
+                    type: string
+                  fecha:
+                    type: string
+                    format: date
+                  horarios:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        salida:
+                          type: string
+                          example: "08:00"
+                        llegada:
+                          type: string
+                          example: "08:45"
+        '400':
+          description: Parámetros inválidos
+        '401':
+          description: No autorizado (API Key inválida)
+
+  /tickets/precios:
+    get:
+      tags:
+        - Tickets
+      summary: Consultar precios de tickets
+      description: Devuelve los precios de los pasajes disponibles entre dos estaciones en una fecha específica.
+      operationId: getPrecios
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - name: origen
+          in: query
+          required: true
+          description: Estación de salida
+          schema:
+            type: string
+            example: Retiro
+        - name: destino
+          in: query
+          required: true
+          description: Estación de llegada
+          schema:
+            type: string
+            example: Tigre
+        - name: fecha
+          in: query
+          required: true
+          description: Fecha del viaje (YYYY-MM-DD)
+          schema:
+            type: string
+            format: date
+            example: 2025-11-08
+      responses:
+        '200':
+          description: Lista de precios disponibles
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  origen:
+                    type: string
+                  destino:
+                    type: string
+                  fecha:
+                    type: string
+                    format: date
+                  precios:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        hora:
+                          type: string
+                          example: "08:00"
+                        clase:
+                          type: string
+                          example: "Economy"
+                        precio:
+                          type: number
+                          example: 1200
+        '400':
+          description: Parámetros inválidos
+        '401':
+          description: No autorizado (API Key inválida)
+
+  /tickets/comprar:
+    post:
+      tags:
+        - Tickets
+      summary: Comprar ticket de tren
+      description: Permite realizar la compra de un ticket de tren indicando los datos del pasajero y el viaje.
+      operationId: postComprarTicket
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - origen
+                - destino
+                - fecha
+                - hora
+                - nombre
+                - apellido
+                - dni
+              properties:
+                origen:
+                  type: string
+                  example: Retiro
+                destino:
+                  type: string
+                  example: Tigre
+                fecha:
+                  type: string
+                  format: date
+                  example: 2025-11-08
+                hora:
+                  type: string
+                  example: "08:00"
+                nombre:
+                  type: string
+                  example: Juan
+                apellido:
+                  type: string
+                  example: Pérez
+                dni:
+                  type: string
+                  example: "32123456"
+      responses:
+        '201':
+          description: Ticket comprado con éxito
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ticket_id:
+                    type: string
+                    example: "TCK12345"
+                  estado:
+                    type: string
+                    example: "confirmado"
+                  detalle:
+                    type: object
+                    properties:
+                      origen:
+                        type: string
+                      destino:
+                        type: string
+                      fecha:
+                        type: string
+                        format: date
+                      hora:
+                        type: string
+                      pasajero:
+                        type: string
+                        example: "Juan Pérez"
+                      dni:
+                        type: string
+                      precio:
+                        type: number
+                        example: 1800
+        '400':
+          description: Datos de compra inválidos
+        '401':
+          description: No autorizado (API Key inválida)
+        '500':
+          description: Error interno al procesar la compra
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: Clave de autenticación obligatoria para acceder a los endpoints
+
