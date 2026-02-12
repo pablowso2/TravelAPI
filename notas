@@ -1,0 +1,10 @@
+1) docker build -t wso2-apim:4.6.0-jdk21 .
+2) verificar la imagen creada: docker images
+3) para entrar en la imagen: 
+docker run -it wso2-apim:4.6.0-jdk21 bash
+3) docker compose up
+
+4) docker compose down
+docker compose stop
+
+5) Remove images  docker rmi -f fd484f19954f

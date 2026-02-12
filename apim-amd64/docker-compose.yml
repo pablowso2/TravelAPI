@@ -1,0 +1,15 @@
+version: '3.8'
+services:
+  apim:
+    build: .
+    container_name: wso2-apim
+    ports:
+      - "9443:9443"
+      - "9763:9763"
+      - "8243:8243"
+      - "8280:8280"
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "9443"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
