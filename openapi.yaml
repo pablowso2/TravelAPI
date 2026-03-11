@@ -1,6 +1,6 @@
 openapi: 3.1.0
 info:
-  title: API de Transporte Ferroviario
+  title: API de Transporte FerroviarioDEV
   version: 1.0.0
   description: |
     API REST para consultar horarios de trenes, precios de tickets y realizar compras.
